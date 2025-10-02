@@ -2,17 +2,21 @@
 
 ## Quick Links
 
-- **[GENERATOR.md](GENERATOR.md)** - Complete generator documentation
+- **[generator.md](generator.md)** - Complete generator documentation
   - Architecture, usage, configs, anomaly types, metrics
   
-- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development guide
+- **[dev_pratices.md](dev_pratices.md)** - Development guide
   - Setup, ruff, testing workflow, pre-commit hooks
   
-- **[TESTING.md](TESTING.md)** - Testing guide ⭐ NEW
+- **[testing.md](testing.md)** - Testing guide ⭐ NEW
   - 46 tests, 69% coverage, patterns, best practices
   
-- **[CONFIGURATION.md](CONFIGURATION.md)** - Configuration files explained
+- **[config.md](config.md)** - Configuration files explained
   - pyproject.toml, requirements.txt, Makefile, .env
+  
+- **[consumer.md](consumer.md)** - Consumer files explained
+  - pyproject.toml, requirements.txt, Makefile, .env
+
 
 ## Quick Start
 

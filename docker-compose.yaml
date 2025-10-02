@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Zookeeper - Mandatory for Kafka
   zookeeper:
@@ -78,24 +76,30 @@ services:
       - mlops-network
     restart: unless-stopped
 
-  # ML Consumer (coming soon - example structure)
-  # ml-consumer:
-  #   image: realtime-mlops:latest
-  #   container_name: ml-consumer
-  #   depends_on:
-  #     kafka:
-  #       condition: service_healthy
-  #     postgres:
-  #       condition: service_healthy
-  #   environment:
-  #     KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-  #     KAFKA_TOPIC: datacenter-metrics
-  #     POSTGRES_HOST: postgres
-  #     LOG_LEVEL: INFO
-  #   command: ["python", "-m", "src.consumers.ml_consumer"]
-  #   networks:
-  #     - mlops-network
-  #   restart: unless-stopped
+  # Storage Consumer - Kafka to PostgreSQL ingestion
+  storage-consumer:
+    image: realtime-mlops:latest
+    container_name: storage-consumer
+    depends_on:
+      generator:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_TOPIC: datacenter-metrics
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: mlops_db
+      POSTGRES_USER: mlops
+      POSTGRES_PASSWORD: mlops_password
+      LOG_LEVEL: INFO
+    command: ["python", "-m", "src.consumers.storage.consume", "--kafka-servers", "kafka:29092", "--postgres-host", "postgres"]
+    networks:
+      - mlops-network
+    restart: unless-stopped
 
   # Kafka UI (optional but very useful for debugging)
   kafka-ui:

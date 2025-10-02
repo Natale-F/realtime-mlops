@@ -1,7 +1,8 @@
 """
-Core utilities and shared components.
+Core utilities shared across the application.
 """
 
-from .logger import log, setup_logging
+from .database import PostgresConnection
+from .logger import setup_logging
 
-__all__ = ["setup_logging", "log"]
+__all__ = ["PostgresConnection", "setup_logging"]

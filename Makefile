@@ -54,6 +54,13 @@ generator-normal:  ## Run generator in normal mode
 generator-chaos:  ## Run generator in chaos mode
 	python -m src.generator.generate --config chaos --duration 300
 
+# Consumer commands
+consumer-storage:  ## Run storage consumer locally
+	python -m src.consumers.storage.consume
+
+consumer-storage-debug:  ## Run storage consumer with debug logging
+	python -m src.consumers.storage.consume --log-level DEBUG
+
 # Docker commands
 docker-build:  ## Build Docker image
 	docker compose build
@@ -78,6 +85,9 @@ docker-logs:  ## View all Docker logs
 
 docker-logs-generator:  ## View generator logs
 	docker compose logs -f generator
+
+docker-logs-consumer:  ## View storage consumer logs
+	docker compose logs -f storage-consumer
 
 docker-logs-kafka:  ## View Kafka logs
 	docker compose logs -f kafka
