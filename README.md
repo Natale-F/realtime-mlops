@@ -64,7 +64,8 @@ The project evolves in **two phases**:
 ## Components
 
 - **Kafka + Zookeeper** → event streaming backbone  
-- **PostgreSQL** → database for storage, predictions, anomalies  
+- **PostgreSQL** → database for storage, predictions, anomalies *(Phase 1: prototyping)*
+- **ClickHouse** → time-series optimized storage *(Phase 2: production-ready)*
 - **Grafana** → dashboards for monitoring  
 - **MLflow** → model training & versioning  
 - **scikit-learn** → ML models (regression + anomaly detection)  
@@ -230,11 +231,15 @@ See [`docs/`](docs/) for detailed guides on each component.
 
 ## 🌍 Roadmap
 
-- [ ] Create a lightweight, live-editable generation script
-- [ ] Basic real-time pipeline with Kafka + PostgreSQL  
-- [ ] Real-time predictions & anomaly detection  
+**Phase 1 - MLOps Foundation (Current)**
+- [x] Production-ready event generator with anomaly injection
+- [x] Kafka → PostgreSQL storage consumer with batch optimization
+- [ ] Real-time predictions & anomaly detection consumers
 - [ ] Grafana dashboards  
-- [ ] Model drift detection  
+- [ ] Model drift detection with MLflow
+
+**Phase 2 - Production Scale**
+- [ ] Migrate PostgreSQL → **ClickHouse** for time-series optimization
 - [ ] Kubernetes Helm charts  
 - [ ] Multi-datacenter support  
 - [ ] Transform into a plug-and-play monitoring platform  

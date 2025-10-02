@@ -1,6 +1,9 @@
+-- Enable TimescaleDB extension
+CREATE EXTENSION IF NOT EXISTS timescaledb;
+
 -- Table for server-level metrics (hardware & OS)
 CREATE TABLE IF NOT EXISTS server_metrics (
-    id SERIAL PRIMARY KEY,
+    id SERIAL,
     timestamp TIMESTAMPTZ NOT NULL,
     server_id VARCHAR(50) NOT NULL,
     -- Compute metrics
@@ -26,7 +29,7 @@ CREATE TABLE IF NOT EXISTS server_metrics (
 
 -- Table for application-level metrics (service performance)
 CREATE TABLE IF NOT EXISTS application_metrics (
-    id SERIAL PRIMARY KEY,
+    id SERIAL,
     timestamp TIMESTAMPTZ NOT NULL,
     service_name VARCHAR(100) NOT NULL,
     -- Request metrics
@@ -49,7 +52,7 @@ CREATE TABLE IF NOT EXISTS application_metrics (
 
 -- Table for model predictions (power consumption forecasting)
 CREATE TABLE IF NOT EXISTS predictions (
-    id SERIAL PRIMARY KEY,
+    id SERIAL,
     timestamp TIMESTAMPTZ NOT NULL,
     server_id VARCHAR(50) NOT NULL,
     predicted_power_watts FLOAT,
@@ -62,7 +65,7 @@ CREATE TABLE IF NOT EXISTS predictions (
 
 -- Table for detected anomalies
 CREATE TABLE IF NOT EXISTS anomalies (
-    id SERIAL PRIMARY KEY,
+    id SERIAL,
     timestamp TIMESTAMPTZ NOT NULL,
     entity_type VARCHAR(50) NOT NULL, -- 'server' or 'application'
     entity_id VARCHAR(100) NOT NULL,  -- server_id or service_name
@@ -139,3 +142,98 @@ SELECT
 FROM anomalies
 WHERE resolved = FALSE
 ORDER BY severity DESC, timestamp DESC;
+
+-- ========================================
+-- TimescaleDB: Convert tables to hypertables
+-- ========================================
+
+-- Convert metrics tables to hypertables (partitioned by time)
+SELECT create_hypertable('server_metrics', 'timestamp', if_not_exists => TRUE);
+SELECT create_hypertable('application_metrics', 'timestamp', if_not_exists => TRUE);
+SELECT create_hypertable('predictions', 'timestamp', if_not_exists => TRUE);
+SELECT create_hypertable('anomalies', 'timestamp', if_not_exists => TRUE);
+
+-- ========================================
+-- TimescaleDB: Optimization policies
+-- ========================================
+
+-- Enable compression for older data (compress chunks older than 7 days)
+ALTER TABLE server_metrics SET (
+    timescaledb.compress,
+    timescaledb.compress_segmentby = 'server_id'
+);
+ALTER TABLE application_metrics SET (
+    timescaledb.compress,
+    timescaledb.compress_segmentby = 'service_name'
+);
+ALTER TABLE predictions SET (
+    timescaledb.compress,
+    timescaledb.compress_segmentby = 'server_id'
+);
+ALTER TABLE anomalies SET (
+    timescaledb.compress,
+    timescaledb.compress_segmentby = 'entity_id'
+);
+
+-- Add compression policies (automatically compress data older than 7 days)
+SELECT add_compression_policy('server_metrics', INTERVAL '7 days', if_not_exists => TRUE);
+SELECT add_compression_policy('application_metrics', INTERVAL '7 days', if_not_exists => TRUE);
+SELECT add_compression_policy('predictions', INTERVAL '7 days', if_not_exists => TRUE);
+SELECT add_compression_policy('anomalies', INTERVAL '7 days', if_not_exists => TRUE);
+
+-- Add retention policies (automatically delete data older than 90 days)
+SELECT add_retention_policy('server_metrics', INTERVAL '90 days', if_not_exists => TRUE);
+SELECT add_retention_policy('application_metrics', INTERVAL '90 days', if_not_exists => TRUE);
+SELECT add_retention_policy('predictions', INTERVAL '90 days', if_not_exists => TRUE);
+SELECT add_retention_policy('anomalies', INTERVAL '90 days', if_not_exists => TRUE);
+
+-- ========================================
+-- TimescaleDB: Continuous aggregates for Grafana
+-- ========================================
+
+-- Hourly server metrics aggregates (pre-computed for fast Grafana queries)
+CREATE MATERIALIZED VIEW IF NOT EXISTS server_metrics_hourly
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 hour', timestamp) AS hour,
+    server_id,
+    AVG(cpu_usage_percent) as avg_cpu,
+    MAX(cpu_usage_percent) as max_cpu,
+    AVG(memory_usage_percent) as avg_memory,
+    MAX(memory_usage_percent) as max_memory,
+    AVG(cpu_temperature_celsius) as avg_temperature,
+    MAX(cpu_temperature_celsius) as max_temperature,
+    AVG(power_consumption_watts) as avg_power,
+    COUNT(*) as sample_count
+FROM server_metrics
+GROUP BY hour, server_id;
+
+-- Hourly application metrics aggregates
+CREATE MATERIALIZED VIEW IF NOT EXISTS application_metrics_hourly
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 hour', timestamp) AS hour,
+    service_name,
+    AVG(request_rate_per_sec) as avg_request_rate,
+    AVG(response_time_p95_ms) as avg_p95_latency,
+    MAX(response_time_p99_ms) as max_p99_latency,
+    AVG(error_rate_percent) as avg_error_rate,
+    SUM(error_count) as total_errors,
+    COUNT(*) as sample_count
+FROM application_metrics
+GROUP BY hour, service_name;
+
+-- Auto-refresh continuous aggregates every hour
+SELECT add_continuous_aggregate_policy('server_metrics_hourly',
+    start_offset => INTERVAL '3 hours',
+    end_offset => INTERVAL '1 hour',
+    schedule_interval => INTERVAL '1 hour',
+    if_not_exists => TRUE
+);
+
+SELECT add_continuous_aggregate_policy('application_metrics_hourly',
+    start_offset => INTERVAL '3 hours',
+    end_offset => INTERVAL '1 hour',
+    schedule_interval => INTERVAL '1 hour',
+    if_not_exists => TRUE
+);
