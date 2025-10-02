@@ -64,12 +64,13 @@ The project evolves in **two phases**:
 ## Components
 
 - **Kafka + Zookeeper** → event streaming backbone  
-- **PostgreSQL** → database for storage, predictions, anomalies *(Phase 1: prototyping)*
-- **ClickHouse** → time-series optimized storage *(Phase 2: production-ready)*
-- **Grafana** → dashboards for monitoring  
+- **TimescaleDB** → time-series database for metrics storage (PostgreSQL extension with hypertables, compression, continuous aggregates)
+- **Grafana** → real-time dashboards & alerting
 - **MLflow** → model training & versioning  
 - **scikit-learn** → ML models (regression + anomaly detection)  
-- **Docker Compose** → easy local deployment  
+- **Docker Compose** → easy local deployment
+
+> **Note**: Currently using TimescaleDB (PostgreSQL + time-series optimizations). Future migration to ClickHouse planned for Phase 2 to handle 100M+ events/day.  
 
 ---
 
@@ -110,9 +111,9 @@ Once running:
    - Run real-time ML predictions (expected power usage)  
    - Detect anomalies (e.g., overheating, spikes)  
 
-3. **PostgreSQL** stores everything in 3 separate tables.  
+3. **TimescaleDB** stores everything in hypertables optimized for time-series queries.
 
-4. **Grafana** dashboards display live metrics, predictions, and anomalies.  
+4. **Grafana** dashboards display live metrics with auto-refresh every 5 seconds.  
 
 ---
 
@@ -233,13 +234,13 @@ See [`docs/`](docs/) for detailed guides on each component.
 
 **Phase 1 - MLOps Foundation (Current)**
 - [x] Production-ready event generator with anomaly injection
-- [x] Kafka → PostgreSQL storage consumer with batch optimization
+- [x] Kafka → TimescaleDB storage consumer with batch optimization
+- [x] Real-time Grafana dashboards with TimescaleDB integration
 - [ ] Real-time predictions & anomaly detection consumers
-- [ ] Grafana dashboards  
 - [ ] Model drift detection with MLflow
 
 **Phase 2 - Production Scale**
-- [ ] Migrate PostgreSQL → **ClickHouse** for time-series optimization
+- [ ] Migrate TimescaleDB → **ClickHouse** for ultra-high throughput (100M+ events/day)
 - [ ] Kubernetes Helm charts  
 - [ ] Multi-datacenter support  
 - [ ] Transform into a plug-and-play monitoring platform  

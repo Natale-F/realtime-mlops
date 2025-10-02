@@ -28,9 +28,12 @@ class ServiceState:
     def generate_metrics(self, inject_anomaly: AnomalyType | None = None) -> dict[str, Any]:
         """Generate realistic application metrics"""
 
+        # Inject new anomaly if requested
+        newly_injected = False
         if inject_anomaly:
             self.active_anomaly = inject_anomaly
             self.anomaly_duration = random.randint(20, 90)
+            newly_injected = True
 
         latency_mult = 1.0
         error_mult = 1.0
@@ -41,9 +44,11 @@ class ServiceState:
             elif self.active_anomaly == AnomalyType.ERROR_BURST:
                 error_mult = random.uniform(10.0, 50.0)
 
-            self.anomaly_duration -= 1
-            if self.anomaly_duration <= 0:
-                self.active_anomaly = None
+            # Only decrement if anomaly was not just injected
+            if not newly_injected:
+                self.anomaly_duration -= 1
+                if self.anomaly_duration <= 0:
+                    self.active_anomaly = None
 
         # Time-based pattern (more traffic during "business hours")
         hour = datetime.now().hour
