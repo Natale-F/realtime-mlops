@@ -56,7 +56,7 @@ class StorageDatabase(PostgresConnection):
         inserted = 0
         try:
             with self.get_cursor() as cursor:
-                psycopg2.extras.execute_batch(cursor, query, metrics, page_size=100) 
+                psycopg2.extras.execute_batch(cursor, query, metrics, page_size=100)
                 inserted = len(metrics)
         except Exception as e:
             logger.error("Failed to batch insert server metrics", count=len(metrics), error=str(e))
