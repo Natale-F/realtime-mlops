@@ -1,6 +1,14 @@
 """
 PostgreSQL operations specific to the storage consumer.
 Handles batch insertions for server and application metrics.
+
+-----
+
+Educational note: in below code, I am using psycopg2.extras.execute_batch to batch insert data into the database.
+The behavior is the same than executemany but with a different implementation & performances.
+
+More informations here: https://www.psycopg.org/docs/extras.html#fast-execution-helpers
+
 """
 
 from typing import Any
@@ -48,7 +56,7 @@ class StorageDatabase(PostgresConnection):
         inserted = 0
         try:
             with self.get_cursor() as cursor:
-                psycopg2.extras.execute_batch(cursor, query, metrics, page_size=100)
+                psycopg2.extras.execute_batch(cursor, query, metrics, page_size=100) 
                 inserted = len(metrics)
         except Exception as e:
             logger.error("Failed to batch insert server metrics", count=len(metrics), error=str(e))

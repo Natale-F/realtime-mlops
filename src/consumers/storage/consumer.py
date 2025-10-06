@@ -22,14 +22,11 @@ class StorageConsumer:
         self.config = config
         logger.info("Initializing storage consumer", config=config)
 
-        # Initialize database connection
         self.db = StorageDatabase(config)
 
-        # Verify database health
         if not self.db.check_health():
             raise RuntimeError("Database health check failed")
 
-        # Initialize Kafka consumer
         try:
             self.consumer = KafkaConsumer(
                 config.kafka_topic,
@@ -56,7 +53,6 @@ class StorageConsumer:
         self.application_metrics_batch: list[dict[str, Any]] = []
         self.last_commit_time = time.time()
 
-        # Statistics
         self.stats = {
             "total_consumed": 0,
             "server_metrics": 0,
@@ -146,10 +142,8 @@ class StorageConsumer:
             for message in self.consumer:
                 self.stats["total_consumed"] += 1
 
-                # Parse and route message
                 self._parse_and_route_message(message.value)
 
-                # Check if we should flush and commit
                 if self._should_commit():
                     self._flush_batches()
                     if not self.config.enable_auto_commit:
@@ -172,7 +166,6 @@ class StorageConsumer:
                     )
                     last_log_time = time.time()
 
-                # Check duration limit
                 if duration_seconds and elapsed >= duration_seconds:
                     logger.info("Duration limit reached", duration_seconds=duration_seconds)
                     break
@@ -185,7 +178,6 @@ class StorageConsumer:
             raise
 
         finally:
-            # Final flush and commit
             logger.info("Flushing remaining batches")
             self._flush_batches()
             if not self.config.enable_auto_commit:

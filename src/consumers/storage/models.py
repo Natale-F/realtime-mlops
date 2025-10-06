@@ -15,7 +15,7 @@ class ConsumerConfig:
     kafka_group_id: str = "storage-consumer-group"
     kafka_auto_offset_reset: str = "earliest"  # 'earliest' or 'latest'
 
-    # PostgreSQL settings (Display here only for educational purposes - I will never write credentials in the code in a real project)
+    # PostgreSQL settings (Display here only for educational purposes - In production, use env/secrets variables)
     postgres_host: str = "localhost"
     postgres_port: int = 5432
     postgres_database: str = "mlops_db"
