@@ -28,8 +28,15 @@ class ServerState:
         self.active_anomaly: AnomalyType | None = None
         self.anomaly_duration: int = 0
 
-    def generate_metrics(self, inject_anomaly: AnomalyType | None = None) -> dict[str, Any]:
-        """Generate realistic server metrics with optional anomaly injection"""
+    def generate_metrics(
+        self, inject_anomaly: AnomalyType | None = None, timestamp: datetime | None = None
+    ) -> dict[str, Any]:
+        """Generate realistic server metrics with optional anomaly injection
+        
+        Args:
+            inject_anomaly: Optional anomaly type to inject
+            timestamp: Optional custom timestamp (for backfill mode)
+        """
 
         # Handle anomaly injection
         if inject_anomaly:
@@ -83,7 +90,7 @@ class ServerState:
 
         return {
             "type": "server_metric",
-            "timestamp": datetime.now(UTC).isoformat(),
+            "timestamp": (timestamp or datetime.now(UTC)).isoformat(),
             "server_id": self.server_id,
             "rack_id": self.rack_id,
             "datacenter_zone": self.zone,

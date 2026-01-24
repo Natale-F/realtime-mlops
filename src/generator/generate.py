@@ -93,6 +93,25 @@ def parse_arguments():
     parser.add_argument(
         "--duration", type=int, help="Duration to run in seconds (default: infinite)"
     )
+    
+    # Backfill mode settings
+    parser.add_argument(
+        "--backfill",
+        action="store_true",
+        help="Enable backfill mode (generate historical data quickly)",
+    )
+    parser.add_argument(
+        "--backfill-days",
+        type=int,
+        default=7,
+        help="Days of historical data to generate in backfill mode (default: 7)",
+    )
+    parser.add_argument(
+        "--backfill-interval",
+        type=int,
+        default=300,
+        help="Seconds between backfill data points (default: 300 = 5min)",
+    )
 
     # Logging
     parser.add_argument(
@@ -132,6 +151,12 @@ def build_config_from_args(args) -> GeneratorConfig:
     if args.anomalies:
         config.enabled_anomalies = [AnomalyType(a) for a in args.anomalies]
 
+    # Backfill settings
+    config.backfill_mode = args.backfill
+    if args.backfill:
+        config.backfill_days = args.backfill_days
+        config.backfill_interval_seconds = args.backfill_interval
+
     return config
 
 
@@ -149,9 +174,16 @@ def main():
         # Build configuration
         config = build_config_from_args(args)
 
-        # Create and run generator
+        # Create generator
         generator = DatacenterGenerator(config)
-        generator.run(duration_seconds=args.duration)
+        
+        # Run in appropriate mode
+        if config.backfill_mode:
+            logger.info("Running in BACKFILL mode")
+            generator.run_backfill()
+        else:
+            logger.info("Running in REAL-TIME mode")
+            generator.run(duration_seconds=args.duration)
 
         logger.info("Generator completed successfully")
         return 0

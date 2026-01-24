@@ -40,6 +40,11 @@ class GeneratorConfig:
     racks: list[str] | None = None
     zones: list[str] | None = None
 
+    # Backfill mode (generate historical data)
+    backfill_mode: bool = False
+    backfill_days: int = 7  # How many days of historical data to generate
+    backfill_interval_seconds: int = 300  # Time between historical points (5min default)
+
     def __post_init__(self):
         if self.enabled_anomalies is None:
             self.enabled_anomalies = list(AnomalyType)

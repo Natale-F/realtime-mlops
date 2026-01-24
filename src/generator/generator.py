@@ -5,6 +5,7 @@ Main datacenter generator orchestrating server and application metrics.
 import json
 import random
 import time
+from datetime import UTC, datetime, timedelta
 
 import structlog
 from kafka import KafkaProducer
@@ -77,8 +78,12 @@ class DatacenterGenerator:
             enabled_anomalies=[a.value for a in config.enabled_anomalies],
         )
 
-    def generate_event(self):
-        """Generate and send one round of metrics"""
+    def generate_event(self, timestamp: datetime | None = None):
+        """Generate and send one round of metrics
+        
+        Args:
+            timestamp: Optional custom timestamp for backfill mode
+        """
 
         # Generate server metrics
         for server in self.servers:
@@ -93,7 +98,7 @@ class DatacenterGenerator:
                 if server_anomalies:
                     anomaly = random.choice(server_anomalies)
 
-            metrics = server.generate_metrics(inject_anomaly=anomaly)
+            metrics = server.generate_metrics(inject_anomaly=anomaly, timestamp=timestamp)
             self.producer.send(self.config.kafka_topic, value=metrics)
 
             if anomaly:
@@ -115,7 +120,7 @@ class DatacenterGenerator:
                     [a for a in app_anomalies if a in self.config.enabled_anomalies]
                 )
 
-            metrics = service.generate_metrics(inject_anomaly=anomaly)
+            metrics = service.generate_metrics(inject_anomaly=anomaly, timestamp=timestamp)
             self.producer.send(self.config.kafka_topic, value=metrics)
 
             if anomaly:
@@ -187,3 +192,85 @@ class DatacenterGenerator:
                 elapsed_sec=round(elapsed, 1),
                 avg_rate_per_sec=round(rate, 1),
             )
+
+    def run_backfill(self):
+        """Generate historical data quickly for testing
+        
+        Generates backfill_days worth of data with backfill_interval_seconds spacing.
+        Much faster than real-time generation.
+        """
+        logger.info(
+            "Starting backfill mode",
+            days=self.config.backfill_days,
+            interval_seconds=self.config.backfill_interval_seconds,
+            servers=len(self.servers),
+            services=len(self.services),
+        )
+
+        start_time = time.time()
+        end_timestamp = datetime.now(UTC)
+        start_timestamp = end_timestamp - timedelta(days=self.config.backfill_days)
+        
+        total_points = int(
+            self.config.backfill_days * 24 * 3600 / self.config.backfill_interval_seconds
+        )
+        
+        logger.info(
+            "Backfill plan",
+            start_timestamp=start_timestamp.isoformat(),
+            end_timestamp=end_timestamp.isoformat(),
+            total_points=total_points,
+            estimated_events=total_points * (len(self.servers) + len(self.services)),
+        )
+
+        current_timestamp = start_timestamp
+        point_count = 0
+        event_count = 0
+        last_log_time = time.time()
+
+        try:
+            while current_timestamp <= end_timestamp:
+                # Generate events with historical timestamp
+                self.generate_event(timestamp=current_timestamp)
+                
+                point_count += 1
+                event_count += len(self.servers) + len(self.services)
+                
+                # Move to next timestamp
+                current_timestamp += timedelta(seconds=self.config.backfill_interval_seconds)
+                
+                # Log progress every 10 seconds of real time
+                if time.time() - last_log_time >= 10:
+                    progress = (point_count / total_points) * 100
+                    elapsed = time.time() - start_time
+                    rate = event_count / elapsed if elapsed > 0 else 0
+                    
+                    logger.info(
+                        "Backfill progress",
+                        progress_percent=round(progress, 1),
+                        points=point_count,
+                        total_points=total_points,
+                        events=event_count,
+                        rate_per_sec=round(rate, 0),
+                        current_timestamp=current_timestamp.isoformat(),
+                    )
+                    last_log_time = time.time()
+            
+            elapsed = time.time() - start_time
+            logger.info(
+                "Backfill completed",
+                total_points=point_count,
+                total_events=event_count,
+                elapsed_sec=round(elapsed, 1),
+                avg_rate_per_sec=round(event_count / elapsed, 0),
+            )
+
+        except KeyboardInterrupt:
+            logger.info("Backfill interrupted by user")
+        
+        except Exception as e:
+            logger.error("Backfill failed", error=str(e), exc_info=True)
+            raise
+
+        finally:
+            self.producer.close()

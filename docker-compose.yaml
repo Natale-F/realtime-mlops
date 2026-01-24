@@ -57,7 +57,24 @@ services:
       timeout: 5s
       retries: 5
 
-  # Event Generator
+  # Redis - Cache for anomaly detection models
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - mlops-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Event Generator - Backfill historical data then run realtime
   generator:
     build:
       context: .
@@ -71,10 +88,15 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       KAFKA_TOPIC: datacenter-metrics
       LOG_LEVEL: INFO
-    command: ["python", "-m", "src.generator.generate", "--config", "normal", "--kafka-servers", "kafka:29092"]
+    # First backfill 14 days of data (fast), then run realtime
+    command: >
+      sh -c "
+      python -m src.generator.generate --backfill --backfill-days 14 --backfill-interval 300 --kafka-servers kafka:29092 --config dev &&
+      python -m src.generator.generate --config dev --kafka-servers kafka:29092 --interval 5.0
+      "
     networks:
       - mlops-network
-    restart: unless-stopped
+    restart: on-failure
 
   # Storage Consumer - Kafka to PostgreSQL ingestion
   storage-consumer:
@@ -97,6 +119,64 @@ services:
       POSTGRES_PASSWORD: mlops_password
       LOG_LEVEL: INFO
     command: ["python", "-m", "src.consumers.storage.consume", "--kafka-servers", "kafka:29092", "--postgres-host", "postgres"]
+    networks:
+      - mlops-network
+    restart: unless-stopped
+
+  # Anomaly Detection Trainer - Trains models on historical data
+  anomaly-trainer:
+    image: realtime-mlops:latest
+    container_name: anomaly-trainer
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: mlops_db
+      POSTGRES_USER: mlops
+      POSTGRES_PASSWORD: mlops_password
+      REDIS_HOST: redis
+      LOG_LEVEL: INFO
+    command: [
+      "sh", "-c",
+      "echo 'Waiting 1 minutes for backfill to complete...' && sleep 60 && python -m src.consumers.anomaly.train --schedule 60 --postgres-host postgres --redis-host redis --history-days 14 --aggregation 5min --seasonal-period 288"
+    ]
+    networks:
+      - mlops-network
+    restart: unless-stopped
+
+  # Anomaly Detection Consumer - Real-time anomaly detection
+  anomaly-detector:
+    image: realtime-mlops:latest
+    container_name: anomaly-detector
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      anomaly-trainer:
+        condition: service_started
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_TOPIC: datacenter-metrics
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: mlops_db
+      POSTGRES_USER: mlops
+      POSTGRES_PASSWORD: mlops_password
+      REDIS_HOST: redis
+      LOG_LEVEL: INFO
+    command: [
+      "python", "-m", "src.consumers.anomaly.detect",
+      "--kafka-servers", "kafka:29092",
+      "--postgres-host", "postgres",
+      "--redis-host", "redis"
+    ]
     networks:
       - mlops-network
     restart: unless-stopped
@@ -141,4 +221,5 @@ networks:
 
 volumes:
   postgres_data:
+  redis_data:
   grafana_data:

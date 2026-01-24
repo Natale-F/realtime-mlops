@@ -25,8 +25,15 @@ class ServiceState:
         self.active_anomaly: AnomalyType | None = None
         self.anomaly_duration: int = 0
 
-    def generate_metrics(self, inject_anomaly: AnomalyType | None = None) -> dict[str, Any]:
-        """Generate realistic application metrics"""
+    def generate_metrics(
+        self, inject_anomaly: AnomalyType | None = None, timestamp: datetime | None = None
+    ) -> dict[str, Any]:
+        """Generate realistic application metrics
+        
+        Args:
+            inject_anomaly: Optional anomaly type to inject
+            timestamp: Optional custom timestamp (for backfill mode)
+        """
 
         # Inject new anomaly if requested
         newly_injected = False
@@ -51,7 +58,8 @@ class ServiceState:
                     self.active_anomaly = None
 
         # Time-based pattern (more traffic during "business hours")
-        hour = datetime.now().hour
+        current_time = timestamp or datetime.now()
+        hour = current_time.hour
         time_multiplier = 1.0 + 0.5 * (1 if 9 <= hour <= 18 else 0)
 
         request_rate = self.base_request_rate * time_multiplier * random.uniform(0.8, 1.2)
@@ -62,7 +70,7 @@ class ServiceState:
 
         return {
             "type": "application_metric",
-            "timestamp": datetime.now(UTC).isoformat(),
+            "timestamp": (timestamp or datetime.now(UTC)).isoformat(),
             "service_name": self.service_name,
             "server_id": self.server_id,
             "request_rate_per_sec": round(request_rate, 2),

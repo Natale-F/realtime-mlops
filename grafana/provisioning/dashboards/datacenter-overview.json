@@ -19,9 +19,48 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": 1,
-  "links": [],
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "🔍 Anomaly Detection Dashboard",
+      "tooltip": "View ML-powered anomaly detection and investigation",
+      "type": "link",
+      "url": "/d/production-monitoring"
+    }
+  ],
   "liveNow": true,
   "panels": [
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "timescaledb"
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "# Datacenter Real-time Monitoring\n\nOverview of datacenter infrastructure in real time. For **anomaly detection**, see the [Production Monitoring Dashboard](/d/production-monitoring).",
+        "mode": "markdown"
+      },
+      "pluginVersion": "12.2.0",
+      "title": "",
+      "type": "text",
+      "transparent": true
+    },
     {
       "datasource": {
         "type": "postgres",
@@ -58,7 +97,7 @@
         "h": 4,
         "w": 4,
         "x": 0,
-        "y": 0
+        "y": 2
       },
       "id": 1,
       "options": {
@@ -129,7 +168,7 @@
         "h": 4,
         "w": 4,
         "x": 4,
-        "y": 0
+        "y": 2
       },
       "id": 2,
       "options": {
@@ -206,7 +245,7 @@
         "h": 4,
         "w": 4,
         "x": 8,
-        "y": 0
+        "y": 2
       },
       "id": 3,
       "options": {
@@ -269,7 +308,7 @@
         "h": 4,
         "w": 4,
         "x": 12,
-        "y": 0
+        "y": 2
       },
       "id": 4,
       "options": {
@@ -334,7 +373,7 @@
         "h": 4,
         "w": 4,
         "x": 16,
-        "y": 0
+        "y": 2
       },
       "id": 5,
       "options": {
@@ -407,7 +446,7 @@
         "h": 4,
         "w": 4,
         "x": 20,
-        "y": 0
+        "y": 2
       },
       "id": 6,
       "options": {
@@ -516,7 +555,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 4
+        "y": 6
       },
       "id": 7,
       "options": {
@@ -625,7 +664,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 4
+        "y": 6
       },
       "id": 8,
       "options": {
@@ -734,7 +773,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 12
+        "y": 14
       },
       "id": 9,
       "options": {
@@ -834,7 +873,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 12
+        "y": 14
       },
       "id": 10,
       "options": {
@@ -940,7 +979,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 20
+        "y": 22
       },
       "id": 12,
       "options": {
@@ -1049,7 +1088,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 20
+        "y": 22
       },
       "id": 14,
       "options": {
@@ -1161,7 +1200,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 30
       },
       "id": 13,
       "options": {
@@ -1215,7 +1254,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Datacenter Real-time Monitoring",
+  "title": "Datacenter Infrastructure Monitoring",
   "uid": "datacenter-overview",
-  "version": 14
+  "version": 15
 }
