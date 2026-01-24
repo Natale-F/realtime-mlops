@@ -9,7 +9,7 @@ All detection methods must inherit from AnomalyDetectionMethod and implement:
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -20,7 +20,7 @@ class DetectionResult:
 
     is_anomaly: bool
     score: float
-    expected_value: Optional[float]
+    expected_value: float | None
     actual_value: float
     details: dict[str, Any]
 

@@ -3,7 +3,6 @@ Data models and configuration for anomaly detection system.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 
 @dataclass
@@ -62,7 +61,7 @@ class AnomalyConfig:
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_db: int = 0
-    redis_password: Optional[str] = None
+    redis_password: str | None = None
 
 
 @dataclass
@@ -77,7 +76,7 @@ class AnomalyRecord:
     severity: str
     anomaly_score: float
     actual_value: float
-    expected_value: Optional[float]
+    expected_value: float | None
     details: dict
     detection_method: str
 

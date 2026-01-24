@@ -7,7 +7,6 @@ Handles:
 - Storing/loading trained models (if using PostgreSQL as cache)
 """
 
-from typing import Optional
 
 import pandas as pd
 import structlog
@@ -199,7 +198,7 @@ class AnomalyDatabase(PostgresConnection):
             logger.error("Failed to save model", error=str(e), model=model_data)
             return False
 
-    def load_model(self, entity_id: str, metric_name: str, method_name: str) -> Optional[dict]:
+    def load_model(self, entity_id: str, metric_name: str, method_name: str) -> dict | None:
         """Load trained model from PostgreSQL
 
         Args:

@@ -5,7 +5,6 @@ Periodically trains models on historical data and saves them to cache.
 """
 
 import time
-from typing import Optional
 
 import structlog
 
@@ -61,10 +60,7 @@ class AnomalyTrainer:
         start_time = time.time()
 
         # Discover entities
-        if self.config.auto_discover_entities:
-            entities = self.db.discover_entities()
-        else:
-            entities = []  # Could be provided via config
+        entities = self.db.discover_entities() if self.config.auto_discover_entities else []
 
         stats["total_entities"] = len(entities)
 
@@ -96,7 +92,7 @@ class AnomalyTrainer:
 
         return stats
 
-    def train_single(self, entity_id: str, metric_name: str) -> Optional[bool]:
+    def train_single(self, entity_id: str, metric_name: str) -> bool | None:
         """Train a single model for an entity-metric pair
 
         Args:

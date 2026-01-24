@@ -3,7 +3,6 @@ Redis cache for storing trained anomaly detection models.
 """
 
 import json
-from typing import Optional
 
 import redis
 import structlog
@@ -46,7 +45,7 @@ class RedisCache:
 
     def load_model(
         self, entity_id: str, metric_name: str, method_name: str
-    ) -> Optional[ModelComponents]:
+    ) -> ModelComponents | None:
         """Load model from Redis"""
         key = self._make_key(entity_id, metric_name, method_name)
         try:
