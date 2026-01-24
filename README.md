@@ -28,46 +28,34 @@ Learn how to build, deploy and operate ML models in a streaming architecture thr
       │  "application_metrics" │
       └───┬───────────┬────────┘
           │           │
-   ┌──────▼───┐      │
-   │ Consumer │      │
-   │ Storage  │      │
-   └─────┬────┘      │
-         │           │
-         ↓           │
-   ┌──────────────────────────────┐
-   │       TimescaleDB            │
-   │  - server_metrics            │
-   │  - application_metrics       │◄───┐
-   │  - anomalies                 │    │
-   └──┬───────────────────────────┘    │
-      │                                │
-      ↓                                │
-   ┌──────────────────┐                │
-   │ Anomaly Trainer  │                │
-   │ (STL + Z-score)  │                │
-   │ - Every 60 min   │                │
-   │ - 14d history    │                │
-   └─────┬────────────┘                │
-         │                             │
-         ↓                             │
-   ┌──────────────────┐                │
-   │      Redis       │                │
-   │ (Model Storage)  │                │
-   └─────┬────────────┘                │
-         │                             │
-         ↓                             │
-   ┌──────────────────┐                │
-   │ Anomaly Detector │                │
-   │ (Real-time STL)  │                │
-   └─────┬────────────┘                │
-         │                             │
-         └─────────────────────────────┘
-                       │
-                       ↓
-                ┌──────────────┐
-                │   Grafana    │
-                │ (Dashboards) │
-                └──────────────┘
+   ┌──────▼───┐   ┌──▼──────────────┐
+   │ Consumer │   │ Anomaly Detector│◄─┐
+   │ Storage  │   │ (Real-time)     │  │
+   └─────┬────┘   └──┬──────────────┘  │ (loads models)
+         │           │                 │
+         │           │           ┌─────┴────────────┐
+         ↓           ↓           │      Redis       │
+   ┌──────────────────────────┐  │ (Model Storage)  │
+   │       TimescaleDB        │  └────▲─────────────┘
+   │  - server_metrics        │       │
+   │  - application_metrics   │       │ (saves models)
+   │  - anomalies             │       │
+   └──┬───────────────────────┘       │
+      │                               │
+      │ (trains on history)           │
+      ↓                               │
+   ┌──────────────────┐               │
+   │ Anomaly Trainer  │──────────────-┘
+   │ (STL + Z-score)  │
+   │ - Every 60 min   │
+   │ - 14d history    │
+   └──────────────────┘
+         │
+         ↓
+   ┌──────────────┐
+   │   Grafana    │
+   │ (Dashboards) │
+   └──────────────┘
 
 ```
 
@@ -77,9 +65,11 @@ Learn how to build, deploy and operate ML models in a streaming architecture thr
 
 - **Generator** → Synthetic datacenter metrics with backfill (14 days) and real-time streaming
 - **Kafka + Zookeeper** → Event streaming (server & application metrics)
+- **Storage Consumer** → Consumes Kafka → writes to TimescaleDB
 - **TimescaleDB** → Time-series PostgreSQL with hypertables for efficient storage
 - **Redis** → In-memory cache for trained ML models
-- **Anomaly Detection** → STL (Seasonal-Trend decomposition) + Z-score algorithm
+- **Anomaly Trainer** → Batch training on historical data (STL + Z-score)
+- **Anomaly Detector** → Real-time detection consuming Kafka stream
 - **Grafana** → Real-time dashboards (Infrastructure + ML Anomaly Detection)
 - **Docker Compose** → Complete stack deployment
 
