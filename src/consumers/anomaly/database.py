@@ -7,7 +7,6 @@ Handles:
 - Storing/loading trained models (if using PostgreSQL as cache)
 """
 
-
 import pandas as pd
 import structlog
 
