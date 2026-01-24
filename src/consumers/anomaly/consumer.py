@@ -173,9 +173,7 @@ class AnomalyConsumer:
             logger.error("Failed to process message", error=str(e), message=message)
             self.stats["parse_errors"] += 1
 
-    def _detect_anomaly(
-        self, entity_id: str, metric_name: str, value: float, timestamp: datetime
-    ):
+    def _detect_anomaly(self, entity_id: str, metric_name: str, value: float, timestamp: datetime):
         """Detect anomaly for a single metric value"""
         self.stats["total_analyzed"] += 1
 
@@ -219,4 +217,3 @@ class AnomalyConsumer:
                 expected=round(result.expected_value, 2) if result.expected_value else None,
                 z_score=result.details.get("z_score"),
             )
-

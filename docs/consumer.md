@@ -193,4 +193,3 @@ python -m src.consumers.consume \
   --log-level DEBUG \
   --offset-reset latest
 ```
-

@@ -10,20 +10,20 @@ from typing import Optional
 class AnomalyConfig:
     """Configuration for the anomaly detection system"""
 
-    method_name: str = "stl_zscore"  
+    method_name: str = "stl_zscore"
 
     # Method-specific configuration
     method_config: dict = field(
         default_factory=lambda: {
             "seasonal_period": 288,  # 24h with 5min aggregation (24*60/5 = 288)
             "trend_period": 577,  # ~2 days (2*288 = 576, +1 for odd), must be > seasonal_period
-            "z_score_threshold": 3.0,  
+            "z_score_threshold": 3.0,
             "min_points": 2016,  # 14 days × 288 points/day = 4032, on prend la moitié minimum
         }
     )
 
-    history_days: int = 14  
-    aggregation_interval: str = "5min"  
+    history_days: int = 14
+    aggregation_interval: str = "5min"
 
     metrics: list[str] = field(
         default_factory=lambda: [
@@ -33,11 +33,11 @@ class AnomalyConfig:
         ]
     )
 
-    training_frequency_minutes: int = 10  
-    auto_discover_entities: bool = True  
+    training_frequency_minutes: int = 10
+    auto_discover_entities: bool = True
 
     # Redis cache settings
-    cache_ttl_seconds: int = 900 
+    cache_ttl_seconds: int = 900
 
     # PostgreSQL settings
     postgres_host: str = "localhost"
@@ -69,17 +69,17 @@ class AnomalyConfig:
 class AnomalyRecord:
     """Represents a detected anomaly for database insertion"""
 
-    timestamp: str  
-    entity_type: str  
-    entity_id: str  
-    metric_name: str  
-    anomaly_type: str  
-    severity: str  
-    anomaly_score: float  
+    timestamp: str
+    entity_type: str
+    entity_id: str
+    metric_name: str
+    anomaly_type: str
+    severity: str
+    anomaly_score: float
     actual_value: float
     expected_value: Optional[float]
-    details: dict  
-    detection_method: str  
+    details: dict
+    detection_method: str
 
     def to_db_dict(self) -> dict:
         """Convert to dict for database insertion"""

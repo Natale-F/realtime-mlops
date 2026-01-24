@@ -92,7 +92,7 @@ Name                             Cover   Missing
 --------------------------------------------------------------
 src/generator/models.py          100%
 src/generator/server_state.py    100%
-src/generator/service_state.py    97%    
+src/generator/service_state.py    97%
 src/generator/generator.py        90%    (KeyboardInterrupt, finally)
 src/generator/generate.py          0%    (CLI, tested manually)
 ```
@@ -110,9 +110,9 @@ def test_initialization(self):
     """Test ServerState initialization."""
     # Arrange - setup test data
     server = ServerState(server_id="srv-001", rack_id="R01", zone="marseille-1")
-    
+
     # Act - execute the code (implicit here)
-    
+
     # Assert - verify results
     assert server.server_id == "srv-001"
     assert server.rack_id == "R01"

@@ -4,16 +4,16 @@ A hands-on tutorial project to do some **real-time MLOps** by building a monitor
 I will create a generator to simulate events in the kafka topic.
 
 The project evolves in **two phases**:
-1. **Tutorial** – educational resource to understand Kafka + MLOps end-to-end  
+1. **Tutorial** – educational resource to understand Kafka + MLOps end-to-end
 2. **Platform** – simple monitoring system that can be plugged into any Kafka event stream
 
 ---
 
 ## Project Goals
 
-- Show how to combine **streaming + MLOps** in a clear iterative way  
-- Provide a plug-and-play environment (`docker-compose up`) for learning and demos  
-- Serve as a foundation for a future lightweight **monitoring platform** for datacenter-like events  
+- Show how to combine **streaming + MLOps** in a clear iterative way
+- Provide a plug-and-play environment (`docker-compose up`) for learning and demos
+- Serve as a foundation for a future lightweight **monitoring platform** for datacenter-like events
 
 ---
 
@@ -63,14 +63,14 @@ The project evolves in **two phases**:
 
 ## Components
 
-- **Kafka + Zookeeper** → event streaming backbone  
+- **Kafka + Zookeeper** → event streaming backbone
 - **TimescaleDB** → time-series database for metrics storage (PostgreSQL extension with hypertables, compression, continuous aggregates)
 - **Grafana** → real-time dashboards & alerting
-- **MLflow** → model training & versioning  
-- **scikit-learn** → ML models (regression + anomaly detection)  
+- **MLflow** → model training & versioning
+- **scikit-learn** → ML models (regression + anomaly detection)
 - **Docker Compose** → easy local deployment
 
-> **Note**: Currently using TimescaleDB (PostgreSQL + time-series optimizations). Future migration to ClickHouse planned for Phase 2 to handle 100M+ events/day.  
+> **Note**: Currently using TimescaleDB (PostgreSQL + time-series optimizations). Future migration to ClickHouse planned for Phase 2 to handle 100M+ events/day.
 
 ---
 
@@ -86,9 +86,9 @@ docker-compose up --build
 
 Once running:
 
-- Grafana → [http://localhost:3000](http://localhost:3000)  
-- PostgreSQL → `localhost:5432`  
-- Kafka broker → `localhost:9092`  
+- Grafana → [http://localhost:3000](http://localhost:3000)
+- PostgreSQL → `localhost:5432`
+- Kafka broker → `localhost:9092`
 
 ---
 
@@ -107,13 +107,13 @@ Once running:
    ```
 
 2. **Consumers** process events:
-   - Store raw metrics  
-   - Run real-time ML predictions (expected power usage)  
-   - Detect anomalies (e.g., overheating, spikes)  
+   - Store raw metrics
+   - Run real-time ML predictions (expected power usage)
+   - Detect anomalies (e.g., overheating, spikes)
 
 3. **TimescaleDB** stores everything in hypertables optimized for time-series queries.
 
-4. **Grafana** dashboards display live metrics with auto-refresh every 5 seconds.  
+4. **Grafana** dashboards display live metrics with auto-refresh every 5 seconds.
 
 ---
 
@@ -145,7 +145,7 @@ docker-compose run --rm ml-trainer
 
 Trained models are **logged and versioned with MLflow**, then reloaded by the streaming consumers.
 
-### Future improvements  
+### Future improvements
 
 - **Retraining on demand**: add an API that allows the system to retrain when needed, for example after drift detection triggers an alert.
 - **Push-to-MLflow**: once retrained, the new version is pushed to MLflow and automatically picked up by the consumers.
@@ -241,9 +241,9 @@ See [`docs/`](docs/) for detailed guides on each component.
 
 **Phase 2 - Production Scale**
 - [ ] Migrate TimescaleDB → **ClickHouse** for ultra-high throughput (100M+ events/day)
-- [ ] Kubernetes Helm charts  
-- [ ] Multi-datacenter support  
-- [ ] Transform into a plug-and-play monitoring platform  
+- [ ] Kubernetes Helm charts
+- [ ] Multi-datacenter support
+- [ ] Transform into a plug-and-play monitoring platform
 
 ---
 
@@ -252,12 +252,12 @@ See [`docs/`](docs/) for detailed guides on each component.
 If you want to completly reset the PostgreSQL data, you can run the following command
 
 ```bash
-docker-compose down -v 
+docker-compose down -v
 ```
 
 ## Contributing
 
-This project starts as a **tutorial**, but contributions are welcome to grow it into a **real platform**.  
+This project starts as a **tutorial**, but contributions are welcome to grow it into a **real platform**.
 
 Open an issue or submit a PR.
 

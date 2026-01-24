@@ -103,7 +103,7 @@ CREATE INDEX idx_anomalies_unresolved ON anomalies(resolved) WHERE resolved = FA
 
 -- View for recent server health (last hour)
 CREATE OR REPLACE VIEW recent_server_health AS
-SELECT 
+SELECT
     server_id,
     timestamp,
     cpu_usage_percent,
@@ -118,7 +118,7 @@ ORDER BY timestamp DESC;
 
 -- View for application performance summary (last 15 minutes)
 CREATE OR REPLACE VIEW recent_application_performance AS
-SELECT 
+SELECT
     service_name,
     AVG(request_rate_per_sec) as avg_request_rate,
     AVG(response_time_p95_ms) as avg_p95_latency,
@@ -130,7 +130,7 @@ GROUP BY service_name;
 
 -- View for active anomalies
 CREATE OR REPLACE VIEW active_anomalies AS
-SELECT 
+SELECT
     entity_type,
     entity_id,
     anomaly_type,

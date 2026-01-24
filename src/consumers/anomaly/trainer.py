@@ -96,9 +96,7 @@ class AnomalyTrainer:
 
         return stats
 
-    def train_single(
-        self, entity_id: str, metric_name: str
-    ) -> Optional[bool]:
+    def train_single(self, entity_id: str, metric_name: str) -> Optional[bool]:
         """Train a single model for an entity-metric pair
 
         Args:
@@ -167,4 +165,3 @@ class AnomalyTrainer:
         """Clean up resources"""
         self.db.close()
         logger.info("Trainer closed")
-

@@ -7,7 +7,7 @@ Handles:
 - Storing/loading trained models (if using PostgreSQL as cache)
 """
 
-from typing import Any, Optional
+from typing import Optional
 
 import pandas as pd
 import structlog
@@ -61,7 +61,7 @@ class AnomalyDatabase(PostgresConnection):
         pg_interval = interval_map.get(aggregation, "5 minutes")
 
         query = f"""
-            SELECT 
+            SELECT
                 time_bucket('{pg_interval}', timestamp) as timestamp,
                 AVG({metric_name}) as value
             FROM server_metrics
@@ -199,9 +199,7 @@ class AnomalyDatabase(PostgresConnection):
             logger.error("Failed to save model", error=str(e), model=model_data)
             return False
 
-    def load_model(
-        self, entity_id: str, metric_name: str, method_name: str
-    ) -> Optional[dict]:
+    def load_model(self, entity_id: str, metric_name: str, method_name: str) -> Optional[dict]:
         """Load trained model from PostgreSQL
 
         Args:
@@ -230,7 +228,7 @@ class AnomalyDatabase(PostgresConnection):
 
                 if row:
                     columns = [desc[0] for desc in cursor.description]
-                    return dict(zip(columns, row))
+                    return dict(zip(columns, row, strict=False))
                 return None
 
         except Exception as e:
@@ -257,7 +255,7 @@ class AnomalyDatabase(PostgresConnection):
                 created_at TIMESTAMPTZ DEFAULT NOW(),
                 UNIQUE(entity_id, metric_name, method_name)
             );
-            
+
             CREATE INDEX IF NOT EXISTS idx_anomaly_models_lookup
             ON anomaly_models(entity_id, metric_name, method_name);
         """

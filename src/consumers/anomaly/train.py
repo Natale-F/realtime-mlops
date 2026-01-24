@@ -46,7 +46,7 @@ def parse_arguments():
     parser.add_argument(
         "--method",
         default="stl_zscore",
-        choices=["stl_zscore"],  
+        choices=["stl_zscore"],
         help="Detection method to use (default: stl_zscore)",
     )
 
@@ -222,4 +222,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-

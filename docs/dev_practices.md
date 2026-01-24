@@ -114,10 +114,10 @@ def test_generate_metrics_structure(self):
     """Test that generated metrics have the correct structure."""
     # Arrange
     server = ServerState(server_id="srv-001", rack_id="R01", zone="marseille-1")
-    
+
     # Act
     metrics = server.generate_metrics()
-    
+
     # Assert
     assert metrics["type"] == "server_metric"
     assert "cpu_usage_percent" in metrics

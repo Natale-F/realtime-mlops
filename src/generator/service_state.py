@@ -29,7 +29,7 @@ class ServiceState:
         self, inject_anomaly: AnomalyType | None = None, timestamp: datetime | None = None
     ) -> dict[str, Any]:
         """Generate realistic application metrics
-        
+
         Args:
             inject_anomaly: Optional anomaly type to inject
             timestamp: Optional custom timestamp (for backfill mode)

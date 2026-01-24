@@ -18,11 +18,11 @@ import pandas as pd
 class DetectionResult:
     """Result of an anomaly detection"""
 
-    is_anomaly: bool  
-    score: float 
-    expected_value: Optional[float] 
-    actual_value: float  
-    details: dict[str, Any]  
+    is_anomaly: bool
+    score: float
+    expected_value: Optional[float]
+    actual_value: float
+    details: dict[str, Any]
 
     def to_dict(self) -> dict:
         """Convert to dictionary for serialization"""
@@ -33,12 +33,12 @@ class DetectionResult:
 class ModelComponents:
     """Trained model components (serializable for caching)"""
 
-    method_name: str  
+    method_name: str
     entity_id: str  # server_id or service_name
     metric_name: str  # cpu_usage_percent, memory_usage_percent, etc.
-    components: dict[str, Any]  
-    trained_at: str  
-    metadata: dict[str, Any]  
+    components: dict[str, Any]
+    trained_at: str
+    metadata: dict[str, Any]
 
     def to_dict(self) -> dict:
         """Convert to dictionary for serialization"""
@@ -59,9 +59,7 @@ class AnomalyDetectionMethod(ABC):
     """
 
     @abstractmethod
-    def fit(
-        self, timeseries: pd.DataFrame, entity_id: str, metric_name: str
-    ) -> ModelComponents:
+    def fit(self, timeseries: pd.DataFrame, entity_id: str, metric_name: str) -> ModelComponents:
         """Train the model on historical data
 
         Args:
@@ -124,4 +122,3 @@ class AnomalyDetectionMethod(ABC):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(config={self.get_config()})"
-

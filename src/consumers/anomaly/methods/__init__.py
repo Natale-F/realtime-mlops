@@ -49,4 +49,3 @@ __all__ = [
     "get_method",
     "list_methods",
 ]
-

@@ -32,7 +32,7 @@ class ServerState:
         self, inject_anomaly: AnomalyType | None = None, timestamp: datetime | None = None
     ) -> dict[str, Any]:
         """Generate realistic server metrics with optional anomaly injection
-        
+
         Args:
             inject_anomaly: Optional anomaly type to inject
             timestamp: Optional custom timestamp (for backfill mode)

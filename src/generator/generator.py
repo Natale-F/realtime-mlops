@@ -80,7 +80,7 @@ class DatacenterGenerator:
 
     def generate_event(self, timestamp: datetime | None = None):
         """Generate and send one round of metrics
-        
+
         Args:
             timestamp: Optional custom timestamp for backfill mode
         """
@@ -195,7 +195,7 @@ class DatacenterGenerator:
 
     def run_backfill(self):
         """Generate historical data quickly for testing
-        
+
         Generates backfill_days worth of data with backfill_interval_seconds spacing.
         Much faster than real-time generation.
         """
@@ -210,11 +210,11 @@ class DatacenterGenerator:
         start_time = time.time()
         end_timestamp = datetime.now(UTC)
         start_timestamp = end_timestamp - timedelta(days=self.config.backfill_days)
-        
+
         total_points = int(
             self.config.backfill_days * 24 * 3600 / self.config.backfill_interval_seconds
         )
-        
+
         logger.info(
             "Backfill plan",
             start_timestamp=start_timestamp.isoformat(),
@@ -232,19 +232,19 @@ class DatacenterGenerator:
             while current_timestamp <= end_timestamp:
                 # Generate events with historical timestamp
                 self.generate_event(timestamp=current_timestamp)
-                
+
                 point_count += 1
                 event_count += len(self.servers) + len(self.services)
-                
+
                 # Move to next timestamp
                 current_timestamp += timedelta(seconds=self.config.backfill_interval_seconds)
-                
+
                 # Log progress every 10 seconds of real time
                 if time.time() - last_log_time >= 10:
                     progress = (point_count / total_points) * 100
                     elapsed = time.time() - start_time
                     rate = event_count / elapsed if elapsed > 0 else 0
-                    
+
                     logger.info(
                         "Backfill progress",
                         progress_percent=round(progress, 1),
@@ -255,7 +255,7 @@ class DatacenterGenerator:
                         current_timestamp=current_timestamp.isoformat(),
                     )
                     last_log_time = time.time()
-            
+
             elapsed = time.time() - start_time
             logger.info(
                 "Backfill completed",
@@ -267,7 +267,7 @@ class DatacenterGenerator:
 
         except KeyboardInterrupt:
             logger.info("Backfill interrupted by user")
-        
+
         except Exception as e:
             logger.error("Backfill failed", error=str(e), exc_info=True)
             raise

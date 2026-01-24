@@ -64,4 +64,3 @@ class RedisCache:
     def _make_key(self, entity_id: str, metric_name: str, method_name: str) -> str:
         """Generate Redis key"""
         return f"anomaly:model:{method_name}:{entity_id}:{metric_name}"
-

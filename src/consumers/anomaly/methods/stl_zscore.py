@@ -29,7 +29,9 @@ class STLZScoreConfig:
     """Configuration for STL + Z-Score method"""
 
     seasonal_period: int = 288  # Period for seasonal component (288 = 24h in 5min buckets)
-    trend_period: int = 577  # Period for trend smoothing (~2 days), must be > seasonal_period and odd
+    trend_period: int = (
+        577  # Period for trend smoothing (~2 days), must be > seasonal_period and odd
+    )
     z_score_threshold: float = 3.0  # Threshold for anomaly detection (3 sigma)
     min_points: int = 2016  # Minimum points required (14 days × 288 points/day / 2)
 
@@ -64,9 +66,7 @@ class STLZScoreMethod(AnomalyDetectionMethod):
             "min_points": self.config.min_points,
         }
 
-    def fit(
-        self, timeseries: pd.DataFrame, entity_id: str, metric_name: str
-    ) -> ModelComponents:
+    def fit(self, timeseries: pd.DataFrame, entity_id: str, metric_name: str) -> ModelComponents:
         """Fit STL model on historical timeseries
 
         Args:
@@ -95,7 +95,7 @@ class STLZScoreMethod(AnomalyDetectionMethod):
         timeseries["timestamp"] = pd.to_datetime(timeseries["timestamp"])
         ts = timeseries.set_index("timestamp")["value"].sort_index()
         ts = ts.dropna()
-        
+
         # Infer aggregation interval from data
         if len(ts) > 1:
             time_diffs = ts.index.to_series().diff().dropna()
@@ -125,7 +125,11 @@ class STLZScoreMethod(AnomalyDetectionMethod):
         seasonal = self.config.seasonal_period
         if seasonal % 2 == 0:
             seasonal += 1
-            logger.debug("Adjusted seasonal period to be odd", original=self.config.seasonal_period, adjusted=seasonal)
+            logger.debug(
+                "Adjusted seasonal period to be odd",
+                original=self.config.seasonal_period,
+                adjusted=seasonal,
+            )
 
         try:
             stl = STL(
@@ -135,7 +139,9 @@ class STLZScoreMethod(AnomalyDetectionMethod):
                 period=self.config.seasonal_period,  # Explicitly set period
             ).fit()
         except Exception as e:
-            logger.error("STL fit failed", entity_id=entity_id, metric_name=metric_name, error=str(e))
+            logger.error(
+                "STL fit failed", entity_id=entity_id, metric_name=metric_name, error=str(e)
+            )
             raise
 
         components = {
@@ -269,7 +275,7 @@ class STLZScoreMethod(AnomalyDetectionMethod):
         # Get interval from components
         interval_seconds = components.get("interval_seconds", 300)
         interval_minutes = interval_seconds // 60
-        
+
         # Calculate minutes since start of day
         minutes_since_midnight = timestamp.hour * 60 + timestamp.minute
 
@@ -278,4 +284,3 @@ class STLZScoreMethod(AnomalyDetectionMethod):
         seasonal_index = (minutes_since_midnight // interval_minutes) % seasonal_period
 
         return seasonal_index
-

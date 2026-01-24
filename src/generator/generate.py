@@ -93,7 +93,7 @@ def parse_arguments():
     parser.add_argument(
         "--duration", type=int, help="Duration to run in seconds (default: infinite)"
     )
-    
+
     # Backfill mode settings
     parser.add_argument(
         "--backfill",
@@ -176,7 +176,7 @@ def main():
 
         # Create generator
         generator = DatacenterGenerator(config)
-        
+
         # Run in appropriate mode
         if config.backfill_mode:
             logger.info("Running in BACKFILL mode")
